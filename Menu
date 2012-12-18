@@ -1,0 +1,67 @@
+#! /bin/bash
+
+# This is a quick way to define the menu. The code could be trimmed further, but added some lines as a cross check - echoing ps status, etc.
+# In case we want to add more options, all we need to do is to add to the below 'Menu' which stores all the menu options, and make corresponding changes by appending code. Hope this helps. 
+
+clear
+PS3='Please enter your choice: '
+Menu=("Change Password" "Diskspace Status" "Logon to ssh" "Services Status" "Open Ports" "Java Apps Running" "Kill PID" "Kill Process/App by name" "Quit")
+select opt in "${Menu[@]}"
+do
+        case $opt in
+                "Change Password")
+# Normally passwd -stdin $name would also work. But I think Ubuntu requires it this way.
+                        echo "Enter Username"
+                        read name
+                        echo "Enter Password"
+                        passwd $name
+                        ;;
+                "Diskspace Status")
+                        df -h
+                        ;;
+                "Logon to ssh")
+# I gave it this way. We can also do 'ssh opt.tracknyc' if we know the hostname. It worked for me that way at Shaw.
+                        ssh 192.168.0.254
+                        ;;
+                "Services Status")
+# We can give multiple options after invoking top. For ex: enter 'r' to renice/change priority, etc.
+                        top
+                        ;;
+                "Open Ports")
+# Gave '|less' so that the screen looks clean, and the port count is clearly known.
+                        netstat -an | egrep 'Proto|LISTEN' | less
+                        echo "$(netstat -an | egrep 'Proto|LISTENING' | wc -l)" ports are currently open
+                        ;;
+                "Java Apps Running")
+# Gave '|less' so that the screen looks clean and the process count is clearly known.
+                        ps -ef | grep java
+                        echo "$(ps -ef | grep java | wc -l)" java processes are currently running
+                        ;;
+                "Kill PID")
+# I had the kill function to be able to kill both PID wise as well as process name wise.
+                        echo "Enter PID you wish to kill"
+                        read kpid
+                        kill $kpid
+                        echo "Killed the process id $kpid"
+                        echo "Showing ps status for $kpid"
+                        ps $kpid
+                        ;;
+                "Kill Process/App by name")
+# The ps status might prolong the code and could be avoided, but I added just as a cross-check.
+                        echo "Enter the process/app name you wish to kill (ex: firefox,java..)"
+                        read proc
+                        kill $(ps -C $proc -o pid)
+                        echo "Killed the process name $proc"
+                        echo "Showing ps status for $proc"
+                        ps -ef | grep $proc
+                        ;;
+                "Quit")
+                        echo "You chose to Quit. See you soon!"
+                        break
+                        ;;
+                *)
+# This will yell "Invalid Option" for any value other than 1-9.
+                        echo "Invalid Option"
+                        ;;
+        esac
+done
